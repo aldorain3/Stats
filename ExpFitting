@@ -1,0 +1,35 @@
+import pandas as pd
+import numpy as np
+import quandl as ql
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing, Holt
+# continents
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+
+europe_co2 = pd.read_csv('BP-C02_EMMISSIONS_EUR.csv')
+asia_co2 = pd.read_csv('BP-C02_EMMISSIONS_CESA.csv')
+america_co2 = pd.read_csv('BP-C02_EMMISSIONS_TASP.csv')
+africa_co2 = pd.read_csv('BP-C02_EMMISSIONS_TASP.csv')
+southamerica_co2 = pd.read_csv('BP-C02_EMMISSIONS_NOAM.csv')
+
+
+total_emissions = pd.DataFrame()
+total_emissions['Date'] = southamerica_co2['Date']
+total_emissions['Value'] = southamerica_co2['Value']+ africa_co2['Value']+ america_co2['Value']+ asia_co2['Value']+ europe_co2['Value']
+
+
+total_emissions['Date'] = pd.to_datetime(total_emissions['Date'])
+train = total_emissions[:40]
+test =  total_emissions[40:]
+print(train.info())
+model = Holt(np.asarray(train['Value']))
+model._index = train.index
+
+fit1 = model.fit()
+pred1 = fit1.forecast(30)
+fit2 = model.fit(smoothing_level=.2)
+pred2 = fit2.forecast(30)
+fit3 = model.fit(smoothing_level=.5)
+pred3 = fit3.forecast(30)
+print(pred3[-1])
